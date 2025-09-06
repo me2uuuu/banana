@@ -35,14 +35,12 @@ def robloxify(photo: Image.Image, add_sword: bool, add_torch: bool):
 
     prompt = build_prompt(add_sword, add_torch)
 
-    # 1) 먼저 단순하게 (SDK가 PIL 이미지를 바로 받는 케이스)
     try:
         resp = client.models.generate_content(
             model=MODEL,
             contents=[prompt, photo]
         )
     except Exception:
-        # 2) 안 되면 PNG 바이트로 넣기 (fallback)
         png_bytes = pil_to_png_bytes(photo)
         resp = client.models.generate_content(
             model=MODEL,
@@ -52,7 +50,6 @@ def robloxify(photo: Image.Image, add_sword: bool, add_torch: bool):
             ],
         )
 
-    # 결과 이미지 파싱
     for part in resp.candidates[0].content.parts:
         if getattr(part, "inline_data", None):
             out = Image.open(BytesIO(part.inline_data.data)).convert("RGB")
@@ -73,6 +70,3 @@ with gr.Blocks(title="Roblox-Style Photo Avatarizer") as demo:
 
 if __name__ == "__main__":
     demo.launch()
-pip install -U google-genai pillow gradio
-export GEMINI_API_KEY="AIzaSyCSKx7e1FLgtNfdUw-mYOw6OqY9wO-9E9g"
-python app.py
